@@ -1,3 +1,5 @@
+await update.message.reply_text(message)
+
 async def thoitiet(update: Update, context: CallbackContext) -> None:
     if context.args:
         city_name = " ".join(context.args)
@@ -30,7 +32,3 @@ async def thoitiet(update: Update, context: CallbackContext) -> None:
     except Exception as e:
         logging.error(f"Lỗi khi lấy dữ liệu thời tiết: {e}")
         await update.message.reply_text("Có lỗi xảy ra trong quá trình lấy dữ liệu thời tiết.")
-
-async def get_chat_id(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
-    await update.message.reply_text(f"Chat ID của bạn là: {chat_id}")
