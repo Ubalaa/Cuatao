@@ -1,4 +1,12 @@
-await update.message.reply_text(message)
+import logging
+import requests
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+API_KEY = 'ba4e1e498fa55a0d9da395574502ad86'
 
 async def thoitiet(update: Update, context: CallbackContext) -> None:
     if context.args:
@@ -12,9 +20,11 @@ async def thoitiet(update: Update, context: CallbackContext) -> None:
     try:
         response = requests.get(url)
         res = response.json()
-        logging.info(res)
+        logger.info(res)
 
-        if res["cod"] != "404":
+        if res["cod"] != 200:
+            await update.message.reply_text("Không tìm thấy dữ liệu của thành phố bạn tra cứu 🙁 \nVui lòng thử tìm thành phố khác.")
+        else:
             data = res["main"]
             live_temperature = data["temp"]
             live_pressure = data["pressure"]
@@ -27,8 +37,22 @@ async def thoitiet(update: Update, context: CallbackContext) -> None:
                 f"- Tình trạng thời tiết: {weather_description.capitalize()}"
             )
             await update.message.reply_text(weather_info)
-        else:
-            await update.message.reply_text("Không tìm thấy dữ liệu của thành phố bạn tra cứu 🙁 \nVui lòng thử tìm thành phố khác.")
     except Exception as e:
-        logging.error(f"Lỗi khi lấy dữ liệu thời tiết: {e}")
+        logger.error(f"Lỗi khi lấy dữ liệu thời tiết: {e}")
         await update.message.reply_text("Có lỗi xảy ra trong quá trình lấy dữ liệu thời tiết.")
+
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text("Chào bạn! Tôi là bot thời tiết. Hãy gõ /thoitiet [Tên thành phố] để tra cứu thời tiết.")
+
+def main() -> None:
+    updater = Updater("7625460762:AAHuCb0kEZAgOES9wH4aH-44iscrMm4_ekU")
+
+    updater.dispatcher.add_handler(CommandHandler("start", start))
+    updater.dispatcher.add_handler(CommandHandler("thoitiet", thoitiet))
+
+    updater.start_polling()
+
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
